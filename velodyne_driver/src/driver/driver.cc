@@ -126,7 +126,7 @@ VelodyneDriver::VelodyneDriver(ros::NodeHandle node,
   private_nh.param("pcap", dump_file, std::string(""));
 
   double cut_angle;
-  private_nh.param("cut_angle", cut_angle, -0.01);
+  private_nh.param("cut_angle", cut_angle, 0.01);
   if (cut_angle < 0.0)
   {
     ROS_INFO_STREAM("Cut at specific angle feature deactivated.");
@@ -212,6 +212,7 @@ bool VelodyneDriver::poll(void)
 
   // Allocate a new shared pointer for zero-copy sharing with other nodelets.
   velodyne_msgs::VelodyneScanPtr scan(new velodyne_msgs::VelodyneScan);
+  // float angle = -1.0;
 
   if( config_.cut_angle >= 0) //Cut at specific angle feature enabled
   {
@@ -245,6 +246,7 @@ bool VelodyneDriver::poll(void)
         break; // Cut angle passed, one full revolution collected
       }
       last_azimuth_ = azimuth;
+      // angle = azimuth;
     }
   }
   else // standard behaviour
@@ -274,6 +276,7 @@ bool VelodyneDriver::poll(void)
     scan->header.stamp = scan->packets.back().stamp;
   }
   scan->header.frame_id = config_.frame_id;
+  //scan->angle = angle;
   output_.publish(scan);
 
   // notify diagnostics that a message has been published, updating
