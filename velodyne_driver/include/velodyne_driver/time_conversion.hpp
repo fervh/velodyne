@@ -63,12 +63,21 @@ ros::Time resolveHourAmbiguity(const ros::Time &stamp, const ros::Time &nominal_
 
 ros::Time rosTimeFromGpsTimestamp(const uint8_t * const data, const struct pcap_pkthdr *header = NULL) {
     const int HOUR_TO_SEC = 3600;
+    const int DECI_TO_MICRO= 100000;
+
     // time for each packet is a 4 byte uint
     // It is the number of microseconds from the top of the hour
     uint32_t usecs = (uint32_t) ( ((uint32_t) data[3]) << 24 |
                                   ((uint32_t) data[2] ) << 16 |
                                   ((uint32_t) data[1] ) << 8 |
                                   ((uint32_t) data[0] ));
+
+    uint32_t division = usecs / DECI_TO_MICRO; 
+    if((usecs % DECI_TO_MICRO) > (DECI_TO_MICRO / 2)){
+        division += 1;
+    }
+    usecs = division * DECI_TO_MICRO;
+
     ros::Time time_nom = ros::Time();
     // if header is NULL, assume real time operation
     if (!header) {
